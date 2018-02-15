@@ -1,0 +1,31 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "author": "Sebastian Diaz <seadiaz@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "nodemon src/index.js --watch src",
+    "start": "node .",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "koa": "^2.5.0",
+    "koa-hbs-renderer": "^1.2.0",
+    "koa-router": "^7.4.0",
+    "koa-static": "^4.0.2",
+    "moment": "^2.20.1",
+    "socket.io": "^2.0.4",
+    "socket.io-p2p-server": "^1.2.0",
+    "winston": "^2.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.17.0",
+    "eslint-config-standard": "^11.0.0-beta.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^6.0.0",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "nodemon": "^1.14.12"
+  }
+}

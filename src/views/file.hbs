@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-6 offset-sm-3">
+          <h1>Welcome to Sarta!</h1>
+
+          <div class="row">
+            <div class="col-sm-12">
+              My ID: <span id="p2p-id"></span>
+            </div>
+            <div class="col-sm-12">
+              Socket status: <span id="socket-status"></span>
+            </div>
+            <div class="col-sm-12">
+              P2P status: <span id="p2p-status"></span>
+            </div>
+            <div class="col-sm-12">
+              <div class="input-group send-message-container">
+                <input type="file" class="form-control" id="file-field">
+                <span class="input-group-btn">
+                  <button class="btn btn-secondary" type="button">Send</button>
+                </span>
+              </div>
+            </div>
+            <div class="col-sm-12" id="messages-container">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+    <script src="/assets/socket.io-p2p.js"></script>
+    <script>
+    $(function () {
+      $('form').submit(function(e){ e.preventDefault(); });
+      var socket = io()
+
+      socket.on('connect', () => {
+        $('#socket-status').html('😃')
+        console.log('Connected!')
+        socket.emit('greetings', {message:'Hi there!'})
+        socket.on('greetings', (data) => {
+          console.info('Greetings:', data)
+        })
+      });
+
+      socket.on('disconnect', () => {
+        $('#socket-status').html('😔')
+        console.log('Disconnected!')
+      });
+
+      var opts = {}
+      var p2pSocket = new P2P(socket, opts, () => {
+        console.log('p2p connected!')
+        $('#p2p-status').html('😃')
+        $('#p2p-id').html(p2pSocket.peerId)
+        p2pSocket.emit('peer-msg', {message:'Hello there. I am ', id: p2pSocket.peerId})
+      })
+
+      $('.send-message-container button').on('click', () => {
+        var file = document.querySelector('.send-message-container input[type=file]').files[0];
+        var reader  = new FileReader();
+        reader.addEventListener('load', (evnt) => {
+          console.log(evnt.target.result)
+          p2pSocket.emit('file', {file: evnt.target.result})
+        }, false);
+
+        if (file) {
+          reader.readAsDataURL(file);
+        }
+      })
+
+      p2pSocket.on('peer-msg', (data) => {
+        console.log('From a peer: %s', JSON.stringify(data))
+        p2pSocket.useSockets = false
+        $('#p2p-status').html('😃')
+        $('#p2p-id').html(p2pSocket.peerId)
+      });
+
+      p2pSocket.on('file', (data) => {
+        console.log('File:', data)
+        var fileBytes = new Uint8Array(data.file)
+        var blob = new window.Blob([fileBytes], {type: 'image/jpeg'})
+        var urlCreator = window.URL || window.webkitURL
+        var fileUrl = urlCreator.createObjectURL(blob)
+        console.log(fileUrl);
+        var msgList = document.getElementById('messages-container')
+        var li = document.createElement('li')
+        var a = document.createElement('a')
+        var linkText = document.createTextNode('New file')
+        a.href = data.file
+        a.appendChild(linkText)
+        li.appendChild(a)
+        msgList.appendChild(li)
+      });
+
+    });
+    </script>
+  </body>
+</html>

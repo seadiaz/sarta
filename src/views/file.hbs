@@ -45,7 +45,18 @@
     <script>
     $(function () {
       $('form').submit(function(e){ e.preventDefault(); });
-      var socket = io()
+      let socket = io()
+
+      function base64ToArrayBuffer(base64) {
+        let binaryString =  window.atob(base64);
+        let binaryLen = binaryString.length;
+        let bytes = new Uint8Array(binaryLen);
+        for (let i = 0; i < binaryLen; i++)        {
+            let ascii = binaryString.charCodeAt(i);
+            bytes[i] = ascii;
+        }
+        return bytes;
+      }
 
       socket.on('connect', () => {
         $('#socket-status').html('😃')
@@ -61,8 +72,8 @@
         console.log('Disconnected!')
       });
 
-      var opts = {}
-      var p2pSocket = new P2P(socket, opts, () => {
+      let opts = {}
+      let p2pSocket = new P2P(socket, opts, () => {
         console.log('p2p connected!')
         $('#p2p-status').html('😃')
         $('#p2p-id').html(p2pSocket.peerId)
@@ -70,11 +81,12 @@
       })
 
       $('.send-message-container button').on('click', () => {
-        var file = document.querySelector('.send-message-container input[type=file]').files[0];
-        var reader  = new FileReader();
+        let file = document.querySelector('.send-message-container input[type=file]').files[0];
+        let reader  = new FileReader();
         reader.addEventListener('load', (evnt) => {
-          console.log(evnt.target.result)
-          p2pSocket.emit('file', {file: evnt.target.result})
+          console.log(file.name)
+          p2pSocket.emit('file', {file: evnt.target.result, name: file.name})
+          console.log('p2p emit done')
         }, false);
 
         if (file) {
@@ -90,20 +102,23 @@
       });
 
       p2pSocket.on('file', (data) => {
-        console.log('File:', data)
-        var fileBytes = new Uint8Array(data.file)
-        var blob = new window.Blob([fileBytes], {type: 'image/jpeg'})
-        var urlCreator = window.URL || window.webkitURL
-        var fileUrl = urlCreator.createObjectURL(blob)
-        console.log(fileUrl);
-        var msgList = document.getElementById('messages-container')
-        var li = document.createElement('li')
-        var a = document.createElement('a')
-        var linkText = document.createTextNode('New file')
-        a.href = data.file
-        a.appendChild(linkText)
+        console.log('File:', data.name)
+        let content = data.file.replace(/^data:.*;base64,/, '')
+        let contentType = /^data:(.*);base64,/.exec(data.file)[1]
+        let fileBytes = base64ToArrayBuffer(content)
+        let blob = new window.Blob([fileBytes], {type: contentType})
+        let urlCreator = window.URL || window.webkitURL
+        let fileUrl = urlCreator.createObjectURL(blob)
+        let msgList = document.getElementById('messages-container')
+        let li = document.createElement('li')
+        let a = document.createElement('a')
+        let linkText = document.createTextNode('New file')
+        a.href = fileUrl
+        a.download = data.name
         li.appendChild(a)
         msgList.appendChild(li)
+        a.click()
+        window.URL.revokeObjectURL(fileUrl)
       });
 
     });

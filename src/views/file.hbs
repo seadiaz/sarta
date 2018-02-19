@@ -85,8 +85,8 @@
         files.set(data.id, {name: data.name, type: data.type, size:data.size, total:data.total, content:''});
       });
       p2pSocket.on('file:chunk', (data) => {
-        console.log('File:', data.name)
         let file = files.get(data.id)
+        console.log('chunk: %d/%d', data.counter, file.total)
         file.content += data.content
       });
 

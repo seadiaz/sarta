@@ -8,6 +8,7 @@ const moment = require('moment')
 const info = require('../package.json')
 const renderer = require('koa-hbs-renderer')
 const path = require('path')
+const uuid = require('uuid/v4')
 
 class Server {
   constructor () {
@@ -53,8 +54,11 @@ class Server {
     this._router.get('/chat', async (ctx) => {
       await ctx.render('chat', {})
     })
-    this._router.get('/file', async (ctx) => {
-      await ctx.render('file', {})
+    this._router.get('/file', (ctx) => {
+      ctx.redirect(`/file/${uuid()}`)
+    })
+    this._router.get('/file/:room', async (ctx) => {
+      await ctx.render('file', {room: ctx.params.room})
     })
   }
 

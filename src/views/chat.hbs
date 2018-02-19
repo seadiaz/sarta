@@ -44,7 +44,6 @@
     <script src="/assets/socket.io-p2p.js"></script>
     <script>
     $(function () {
-      $('form').submit(function(e){ e.preventDefault(); });
       var socket = io()
 
       socket.on('connect', () => {

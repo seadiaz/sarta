@@ -14,6 +14,9 @@
 
           <div class="row">
             <div class="col-sm-12">
+              Room: {{room}}
+            </div>
+            <div class="col-sm-12">
               My ID: <span id="p2p-id"></span>
             </div>
             <div class="col-sm-12">
@@ -23,6 +26,8 @@
               P2P status: <span id="p2p-status"></span>
             </div>
             <div class="col-sm-12" id="drop-zone" style="border: 1px solid black; height: 300px;">
+            </div>
+            <div class="col-sm-12" id="download-zone">
             </div>
           </div>
         </div>
@@ -67,6 +72,7 @@
 
       function onP2PConnected(socket) {
         console.log('p2p connected!')
+        socket.useSockets = false
         $('#p2p-status').html('😃')
         $('#p2p-id').html(socket.peerId)
       }
@@ -74,9 +80,10 @@
       let opts = {}
       let p2pSocket = new P2P(socket, opts, () => {
         onP2PConnected(p2pSocket)
+        p2pSocket.emit('peer-msg')
       })
 
-      p2pSocket.on('peer-msg', (data) => {
+      p2pSocket.on('peer-msg', () => {
         onP2PConnected(p2pSocket)
       });
 
@@ -100,16 +107,17 @@
         let fileUrl = urlCreator.createObjectURL(blob)
         let a = document.createElement('a')
         a.href = fileUrl
+        a.innerHTML = file.name
         a.download = file.name
         a.value = file.name
+        let div = document.getElementById('download-zone');
+        div.appendChild(a)
         a.click()
-        window.URL.revokeObjectURL(fileUrl)
       });
 
       function chopFile(file) {
         let content = file.replace(/^data:.*;base64,/, '')
         let output = _(content).chunk(50000).map((item) => { return _.join(item, ''); }).value()
-        console.log(output);
         return output;
       }
 

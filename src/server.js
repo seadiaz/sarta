@@ -31,8 +31,9 @@ class Server {
         .use(serve('./public'))
         .use(this._router.routes())
         .use(this._router.allowedMethods())
-      this._server = this._koa.listen(3000, () => {
-        logger.info('Server listening!!!')
+      let port = process.env.PORT || 3000
+      this._server = this._koa.listen(port, () => {
+        logger.info('Server listening on port %d!!!', port)
       })
       this._configSocketIO()
       resolve()

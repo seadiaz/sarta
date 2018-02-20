@@ -1,5 +1,4 @@
 const socketIO = require('socket.io')
-const p2p = require('socket.io-p2p-server')
 const Koa = require('koa')
 const Router = require('koa-router')
 const serve = require('koa-static')
@@ -64,10 +63,12 @@ class Server {
 
   _configSocketIO () {
     this._io = socketIO(this._server)
-    this._io.use(p2p.Server)
     this._io.on('connect', (socket) => {
-      logger.info('Client connected!')
       socket.emit('greetings', {message: 'Hi there!'})
+      socket.on('arrived', (data) => {
+        console.log('arrived')
+        socket.broadcast.emit('peer:arrived', data)
+      })
       socket.on('greetings', (data) => {
         logger.info('Greetings:', data)
       })

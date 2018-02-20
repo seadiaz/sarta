@@ -16,7 +16,6 @@
     "koa-static": "^4.0.2",
     "moment": "^2.20.1",
     "socket.io": "^2.0.4",
-    "socket.io-p2p-server": "^1.2.0",
     "uuid": "^3.2.1",
     "winston": "^2.4.0"
   },

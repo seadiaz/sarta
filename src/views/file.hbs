@@ -34,123 +34,91 @@
       </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
+    <script src="//code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
     <script src="//cdn.rawgit.com/lil-js/uuid/0.1.0/uuid.js"></script>
+    <script src="//cdn.peerjs.com/0.3/peer.min.js"></script>
     <script src="/assets/socket.io-p2p.js"></script>
     <script>
     $(function () {
-      let socket = io()
+      let peer = new Peer({key: 'hx8o3o65ebmg3nmi'});
 
-      function base64ToArrayBuffer(base64) {
-        let binaryString =  window.atob(base64);
-        let binaryLen = binaryString.length;
-        let bytes = new Uint8Array(binaryLen);
-        for (let i = 0; i < binaryLen; i++)        {
-            let ascii = binaryString.charCodeAt(i);
-            bytes[i] = ascii;
-        }
-        return bytes;
-      }
 
-      socket.on('connect', () => {
-        $('#socket-status').html('😃')
-        console.log('Connected!')
-        socket.emit('greetings', {message:'Hi there!'})
-        socket.on('greetings', (data) => {
-          console.info('Greetings:', data)
-        })
-      });
-
-      socket.on('disconnect', () => {
-        $('#socket-status').html('😔')
-        console.log('Disconnected!')
-      });
-
-      function onP2PConnected(socket) {
-        console.log('p2p connected!')
-        socket.useSockets = false
+      function configConnection(conn) {
         $('#p2p-status').html('😃')
-        $('#p2p-id').html(socket.peerId)
-      }
 
-      let opts = {}
-      let p2pSocket = new P2P(socket, opts, () => {
-        onP2PConnected(p2pSocket)
-        p2pSocket.emit('peer-msg')
-      })
-
-      p2pSocket.on('peer-msg', () => {
-        onP2PConnected(p2pSocket)
-      });
-
-      let files = new Map();
-      p2pSocket.on('file:init', (data) => {
-        files.set(data.id, {name: data.name, type: data.type, size:data.size, total:data.total, content:''});
-      });
-      p2pSocket.on('file:chunk', (data) => {
-        let file = files.get(data.id)
-        console.log('chunk: %d/%d', data.counter, file.total)
-        file.content += data.content
-      });
-
-      p2pSocket.on('file:done', (data) => {
-        let file = files.get(data.id)
-        let content = file.content
-        let contentType = file.type
-        let fileBytes = base64ToArrayBuffer(content)
-        let blob = new window.Blob([fileBytes], {type: contentType})
-        let urlCreator = window.URL || window.webkitURL
-        let fileUrl = urlCreator.createObjectURL(blob)
-        let a = document.createElement('a')
-        a.href = fileUrl
-        a.innerHTML = file.name
-        a.download = file.name
-        a.value = file.name
-        let div = document.getElementById('download-zone');
-        div.appendChild(a)
-        a.click()
-      });
-
-      function chopFile(file) {
-        let content = file.replace(/^data:.*;base64,/, '')
-        let output = _(content).chunk(50000).map((item) => { return _.join(item, ''); }).value()
-        return output;
-      }
-
-      function handleFileSelect(evt) {
-        evt.stopPropagation();
-        evt.preventDefault();
-        let file = evt.dataTransfer.files[0];
-        let reader  = new FileReader();
-        reader.addEventListener('load', (evnt) => {
-          console.log(file.name)
-          let choppedFile = chopFile(evnt.target.result);
-          let counter = 1;
-          let id = lil.uuid();
-          p2pSocket.emit('file:init', {id, name: file.name, type: file.type, size:file.size, total:choppedFile.length})
-          for (let chunk of choppedFile) {
-            p2pSocket.emit('file:chunk', {id, content: chunk, counter: counter++})
+        function base64ToArrayBuffer(base64) {
+          let binaryString =  window.atob(base64);
+          let binaryLen = binaryString.length;
+          let bytes = new Uint8Array(binaryLen);
+          for (let i = 0; i < binaryLen; i++)        {
+              let ascii = binaryString.charCodeAt(i);
+              bytes[i] = ascii;
           }
-          p2pSocket.emit('file:done', {id})
-          console.log('p2p emit done')
-        }, false);
+          return bytes;
+        }
 
-        reader.readAsDataURL(file);
+        conn.on('data', (data) => {
+            let fileBytes = base64ToArrayBuffer(data.content)
+            let blob = new window.Blob([fileBytes], {type: data.type})
+            let urlCreator = window.URL || window.webkitURL
+            let fileUrl = urlCreator.createObjectURL(blob)
+            let a = document.createElement('a')
+            a.href = fileUrl
+            a.innerHTML = data.name
+            a.download = data.name
+            a.value = data.name
+            let div = document.getElementById('download-zone');
+            div.appendChild(a)
+            a.click()
+        });
+
+        function handleFileSelect(evt) {
+          evt.stopPropagation();
+          evt.preventDefault();
+          let file = evt.dataTransfer.files[0];
+          let reader  = new FileReader();
+          reader.addEventListener('load', (evnt) => {
+            let content = evnt.target.result.replace(/^data:.*;base64,/, '')
+            conn.send({content, name: file.name, type: file.type, size:file.size})
+          }, false);
+
+          reader.readAsDataURL(file);
+        }
+
+        function handleDragOver(evt) {
+          evt.stopPropagation();
+          evt.preventDefault();
+          evt.dataTransfer.dropEffect = 'copy';
+        }
+
+        var dropZone = document.getElementById('drop-zone');
+        dropZone.addEventListener('dragover', handleDragOver, false);
+        dropZone.addEventListener('drop', handleFileSelect, false);
       }
 
-      function handleDragOver(evt) {
-        evt.stopPropagation();
-        evt.preventDefault();
-        evt.dataTransfer.dropEffect = 'copy';
-      }
+      peer.on('open', (id) => {
+        $('#p2p-id').html(id)
+        let socket = io()
+        socket.on('connect', () => {
+          $('#socket-status').html('😃')
+          socket.emit('arrived', {id: id})
+          socket.on('peer:arrived', (data) => {
+            conn = peer.connect(data.id);
+            configConnection(conn)
+          })
+        });
+        socket.on('disconnect', () => {
+          $('#socket-status').html('😔')
+        });
+      });
 
-      var dropZone = document.getElementById('drop-zone');
-      dropZone.addEventListener('dragover', handleDragOver, false);
-      dropZone.addEventListener('drop', handleFileSelect, false);
+      peer.on('connection', (conn) => {
+        configConnection(conn)
+      });
     });
     </script>
   </body>

@@ -40,12 +40,10 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <script src="//cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
     <script src="//cdn.rawgit.com/lil-js/uuid/0.1.0/uuid.js"></script>
-    <script src="//cdn.peerjs.com/0.3/peer.min.js"></script>
-    <script src="/assets/socket.io-p2p.js"></script>
+    <script src="/assets/peer.min.js"></script>
     <script>
     $(function () {
-      let peer = new Peer({key: 'hx8o3o65ebmg3nmi'});
-
+      let peer = new Peer({key: 'peerjs', host: 'sarta-peerjs-server.herokuapp.com', port: 443, secure: true, path: '/'});
 
       function configConnection(conn) {
         $('#p2p-status').html('😃')

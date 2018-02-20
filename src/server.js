@@ -8,11 +8,13 @@ const info = require('../package.json')
 const renderer = require('koa-hbs-renderer')
 const path = require('path')
 const uuid = require('uuid/v4')
+const {PeerServer} = require('peer')
 
 class Server {
   constructor () {
     this._koa = new Koa()
     this._router = new Router()
+    this._peerServer = PeerServer({port: 9000, path: '/myapp'})
   }
   start () {
     return new Promise((resolve, reject) => {
@@ -66,14 +68,7 @@ class Server {
     this._io.on('connect', (socket) => {
       socket.emit('greetings', {message: 'Hi there!'})
       socket.on('arrived', (data) => {
-        console.log('arrived')
         socket.broadcast.emit('peer:arrived', data)
-      })
-      socket.on('greetings', (data) => {
-        logger.info('Greetings:', data)
-      })
-      socket.on('peer-msg', (data) => {
-        logger.info('From a peer: %s', JSON.stringify(data))
       })
       socket.on('disconnect', (reason) => {
         logger.info('Client disconnected: %s', reason)

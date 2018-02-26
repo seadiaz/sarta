@@ -53,14 +53,11 @@ class Server {
   }
 
   _configViews () {
-    this._router.get('/chat', async (ctx) => {
-      await ctx.render('chat', {})
+    this._router.get('/', (ctx) => {
+      ctx.redirect(`/${uuid()}`)
     })
-    this._router.get('/file', (ctx) => {
-      ctx.redirect(`/file/${uuid()}`)
-    })
-    this._router.get('/file/:room', async (ctx) => {
-      await ctx.render('file', {room: ctx.params.room})
+    this._router.get('/:room', async (ctx) => {
+      await ctx.render('index', {room: ctx.params.room})
     })
   }
 

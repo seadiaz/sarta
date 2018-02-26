@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous">
   </head>
   <body>
     <div class="container">
@@ -14,10 +14,21 @@
 
           <div class="row">
             <div class="col-sm-12">
+              <div class="form-group row">
+                <label for="name" class="col-sm-2 col-form-label">Name</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="name" value="email@example.com">
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12">
               Room: {{room}}
             </div>
             <div class="col-sm-12">
-              My ID: <span id="p2p-id"></span>
+              My ID: <span id="p2p-my-id"></span>
+            </div>
+            <div class="col-sm-12">
+              Other ID: <span id="p2p-other-id"></span>
             </div>
             <div class="col-sm-12">
               Socket status: <span id="socket-status"></span>
@@ -36,17 +47,32 @@
 
     <script src="//code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <script src="//cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
     <script src="//cdn.rawgit.com/lil-js/uuid/0.1.0/uuid.js"></script>
     <script src="/assets/pear.min.js"></script>
     <script>
     $(function () {
-      let peer = new Peer({key: 'peerjs', host: 'sarta-peerjs-server.herokuapp.com', port: 443, secure: true, path: '/'});
+      function getConfig() {
+        let configKey = 'config'
+        let config = JSON.parse(localStorage.getItem(configKey))
+        if (!config) {
+          config = {name:'desconocido'}
+          localStorage.setItem(configKey, JSON.stringify(config))
+        }
+
+        console.log('config:', config)
+        return config;
+      }
+
+      let config = getConfig();
+      let peer = new Peer(config.pp2id, {key: 'peerjs', host: 'sarta-peerjs-server.herokuapp.com', port: 443, secure: true, path: '/'});
 
       function configConnection(conn) {
         $('#p2p-status').html('😃')
+        $('#p2p-other-id').html(conn.peer)
+
 
         function base64ToArrayBuffer(base64) {
           let binaryString =  window.atob(base64);
@@ -60,18 +86,22 @@
         }
 
         conn.on('data', (data) => {
-            let fileBytes = base64ToArrayBuffer(data.content)
-            let blob = new window.Blob([fileBytes], {type: data.type})
-            let urlCreator = window.URL || window.webkitURL
-            let fileUrl = urlCreator.createObjectURL(blob)
-            let a = document.createElement('a')
-            a.href = fileUrl
-            a.innerHTML = data.name
-            a.download = data.name
-            a.value = data.name
-            let div = document.getElementById('download-zone');
-            div.appendChild(a)
-            a.click()
+          let fileBytes = base64ToArrayBuffer(data.content)
+          let blob = new window.Blob([fileBytes], {type: data.type})
+          let urlCreator = window.URL || window.webkitURL
+          let fileUrl = urlCreator.createObjectURL(blob)
+          let a = document.createElement('a')
+          a.href = fileUrl
+          a.innerHTML = data.name
+          a.download = data.name
+          a.value = data.name
+          let div = document.getElementById('download-zone');
+          div.appendChild(a)
+          a.click()
+        });
+
+        conn.on('close', () => {
+          console.log('peer connection closed')
         });
 
         function handleFileSelect(evt) {
@@ -99,7 +129,7 @@
       }
 
       peer.on('open', (id) => {
-        $('#p2p-id').html(id)
+        $('#p2p-my-id').html(id)
         let socket = io()
         socket.on('connect', () => {
           $('#socket-status').html('😃')

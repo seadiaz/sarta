@@ -1,64 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous">
-  </head>
-  <body>
-    <div class="container">
-      <div class="row">
-        <div class="col-sm-6 offset-sm-3">
-          <h1>Welcome to Sarta!</h1>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
 
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="form-group row">
-                <label for="name" class="col-sm-2 col-form-label">Name</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="name" value="email@example.com">
-                </div>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    crossorigin="anonymous">
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-6 offset-sm-3">
+        <h1>Welcome to Sarta!</h1>
+
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="form-group row">
+              <label for="name" class="col-sm-2 col-form-label">Name</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="name" value="email@example.com">
               </div>
             </div>
-            <div class="col-sm-12">
-              Room: {{room}}
-            </div>
-            <div class="col-sm-12">
-              My ID: <span id="p2p-my-id"></span>
-            </div>
-            <div class="col-sm-12">
-              Other ID: <span id="p2p-other-id"></span>
-            </div>
-            <div class="col-sm-12">
-              Socket status: <span id="socket-status"></span>
-            </div>
-            <div class="col-sm-12">
-              P2P status: <span id="p2p-status"></span>
-            </div>
-            <div class="col-sm-12" id="drop-zone" style="border: 1px solid black; height: 300px;">
-            </div>
-            <div class="col-sm-12" id="download-zone">
-            </div>
+          </div>
+          <div class="col-sm-12">
+            Room: {{room}}
+          </div>
+          <div class="col-sm-12">
+            My ID: <span id="p2p-my-id"></span>
+          </div>
+          <div class="col-sm-12">
+            Other ID: <span id="p2p-other-id"></span>
+          </div>
+          <div class="col-sm-12">
+            Socket status: <span id="socket-status"></span>
+          </div>
+          <div class="col-sm-12">
+            P2P status: <span id="p2p-status"></span>
+          </div>
+          <div class="col-sm-12" id="drop-zone" style="border: 1px solid black; height: 300px;">
+          </div>
+          <div class="col-sm-12" id="download-zone">
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <script src="//code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
-    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
-    <script src="//cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
-    <script src="//cdn.rawgit.com/lil-js/uuid/0.1.0/uuid.js"></script>
-    <script src="/assets/pear.min.js"></script>
-    <script>
+  <script src="//code.jquery.com/jquery-3.1.1.slim.min.js"
+    integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
+    crossorigin="anonymous"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+    integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+    crossorigin="anonymous"></script>
+  <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js"></script>
+  <script src="//cdn.rawgit.com/lil-js/uuid/0.1.0/uuid.js"></script>
+  <script src="/assets/peer.min.js"></script>
+  <script>
     $(function () {
       function getConfig() {
         let configKey = 'config'
         let config = JSON.parse(localStorage.getItem(configKey))
         if (!config) {
-          config = {name:'desconocido'}
+          config = { name: 'desconocido' }
           localStorage.setItem(configKey, JSON.stringify(config))
         }
 
@@ -67,7 +75,7 @@
       }
 
       let config = getConfig();
-      let peer = new Peer(config.pp2id, {key: 'peerjs', host: 'sarta-peerjs-server.herokuapp.com', port: 443, secure: true, path: '/'});
+      let peer = new Peer(config.pp2id, { key: 'peerjs', host: 'sarta-peerjs-server.herokuapp.com', port: 443, secure: true, path: '/' });
 
       function configConnection(conn) {
         $('#p2p-status').html('😃')
@@ -75,19 +83,19 @@
 
 
         function base64ToArrayBuffer(base64) {
-          let binaryString =  window.atob(base64);
+          let binaryString = window.atob(base64);
           let binaryLen = binaryString.length;
           let bytes = new Uint8Array(binaryLen);
-          for (let i = 0; i < binaryLen; i++)        {
-              let ascii = binaryString.charCodeAt(i);
-              bytes[i] = ascii;
+          for (let i = 0; i < binaryLen; i++) {
+            let ascii = binaryString.charCodeAt(i);
+            bytes[i] = ascii;
           }
           return bytes;
         }
 
         conn.on('data', (data) => {
           let fileBytes = base64ToArrayBuffer(data.content)
-          let blob = new window.Blob([fileBytes], {type: data.type})
+          let blob = new window.Blob([fileBytes], { type: data.type })
           let urlCreator = window.URL || window.webkitURL
           let fileUrl = urlCreator.createObjectURL(blob)
           let a = document.createElement('a')
@@ -108,10 +116,10 @@
           evt.stopPropagation();
           evt.preventDefault();
           let file = evt.dataTransfer.files[0];
-          let reader  = new FileReader();
+          let reader = new FileReader();
           reader.addEventListener('load', (evnt) => {
             let content = evnt.target.result.replace(/^data:.*;base64,/, '')
-            conn.send({content, name: file.name, type: file.type, size:file.size})
+            conn.send({ content, name: file.name, type: file.type, size: file.size })
           }, false);
 
           reader.readAsDataURL(file);
@@ -133,7 +141,7 @@
         let socket = io()
         socket.on('connect', () => {
           $('#socket-status').html('😃')
-          socket.emit('arrived', {id: id})
+          socket.emit('arrived', { id: id })
           socket.on('peer:arrived', (data) => {
             conn = peer.connect(data.id);
             configConnection(conn)
@@ -148,6 +156,7 @@
         configConnection(conn)
       });
     });
-    </script>
-  </body>
+  </script>
+</body>
+
 </html>

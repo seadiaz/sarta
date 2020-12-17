@@ -8,13 +8,11 @@ const info = require('../package.json')
 const renderer = require('koa-hbs-renderer')
 const path = require('path')
 const uuid = require('uuid/v4')
-const { PeerServer } = require('peer')
 
 class Server {
   constructor () {
     this._koa = new Koa()
     this._router = new Router()
-    this._peerServer = PeerServer({ port: 9000, path: '/myapp' })
   }
 
   start () {

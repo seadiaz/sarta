@@ -75,7 +75,7 @@
       }
 
       let config = getConfig();
-      let peer = new Peer(config.pp2id);
+      let peer = new Peer(config.pp2id, { config: { 'iceServers': [{ 'urls': 'stun:stun.l.google.com:19302' }], 'sdpSemantics': 'unified-plan' } });
 
       function configConnection(conn) {
         $('#p2p-status').html('😃')

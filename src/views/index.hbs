@@ -75,7 +75,7 @@
       }
 
       let config = getConfig();
-      let peer = new Peer(config.pp2id, { key: 'peerjs', host: 'sarta-peerjs-server.herokuapp.com', port: 443, secure: true, path: '/' });
+      let peer = new Peer(config.pp2id);
 
       function configConnection(conn) {
         $('#p2p-status').html('😃')
